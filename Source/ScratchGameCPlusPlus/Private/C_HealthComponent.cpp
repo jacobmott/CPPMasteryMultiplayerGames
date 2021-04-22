@@ -65,6 +65,22 @@ void UC_HealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage,
 }
 
 
+void UC_HealthComponent::Heal(float HealAmount)
+{
+	if (HealAmount <= 0.0f || Health <= 0.0f ) {
+		return;
+	}
+
+
+	Health = FMath::Clamp(Health + HealAmount, 0.0f, DefaultHealth);
+
+	UE_LOG(LogTemp, Log, TEXT("Health Changed: %s (+%s)"), *FString::SanitizeFloat(Health), *FString::SanitizeFloat(HealAmount));
+
+  //This allows us to bind/subscribe to this event in blueprints so we can do things when this event triggers
+  //if we listen to the broadcast
+  OnHealthChanged.Broadcast(this, Health, -HealAmount, nullptr, nullptr, nullptr);
+}
+
 void UC_HealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
   Super::GetLifetimeReplicatedProps(OutLifetimeProps);
