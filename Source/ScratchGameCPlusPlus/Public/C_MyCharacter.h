@@ -30,7 +30,7 @@ protected:
 	void BeginCrouch();
 	void EndCrouch();
 
-    void BeginJump();
+  void BeginJump();
 
 	void BeginZoom();
 	void EndZoom();
@@ -84,6 +84,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual FVector GetPawnViewLocation() const override;
+
+
 
 
 };

@@ -10,6 +10,7 @@
 #include "ScratchGameCPlusPlus/ScratchGameCPlusPlus.h"
 #include "C_HealthComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 // Sets default values
@@ -19,7 +20,7 @@ AC_MyCharacter::AC_MyCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-    SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+  SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
 
@@ -35,6 +36,7 @@ AC_MyCharacter::AC_MyCharacter()
 	WeaponAttachSocketName = "WeaponSocket";
 
 	HealthComponent = CreateDefaultSubobject<UC_HealthComponent>(TEXT("HealthComp"));
+
 
 }
 
@@ -130,6 +132,7 @@ void AC_MyCharacter::OnHealthChanged(UC_HealthComponent* OwningHealthComp, float
 	}
 }
 
+
 // Called every frame
 void AC_MyCharacter::Tick(float DeltaTime)
 {
@@ -156,7 +159,7 @@ void AC_MyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AC_MyCharacter::EndCrouch);
 
 
-    PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AC_MyCharacter::BeginJump);
+  PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AC_MyCharacter::BeginJump);
 
 
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AC_MyCharacter::BeginZoom);
@@ -178,12 +181,12 @@ FVector AC_MyCharacter::GetPawnViewLocation() const
 
 }
 
-
 void AC_MyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
   Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AC_MyCharacter, CurrentWeapon);
 	DOREPLIFETIME(AC_MyCharacter, bDied);
+	
 
 }

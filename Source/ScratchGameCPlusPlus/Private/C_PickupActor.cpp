@@ -23,18 +23,25 @@ AC_PickupActor::AC_PickupActor()
 
 	CooldownDuration = 10.0f;
 
+	bReplicates = true;
+
 }
 
 // Called when the game starts or when spawned
 void AC_PickupActor::BeginPlay()
 {
+
 	Super::BeginPlay();
-	Respawn();
+  //if (GetLocalRole() == ROLE_Authority) {
+  //HasAuthority is the same thing as above, its just inlined to it
+	//if (GetLocalRole() == ROLE_Authority) {
+	if (HasAuthority()){
+		Respawn();
+	}
 }
 
 void AC_PickupActor::Respawn()
 {
-
 
 	if (PowerUpClass == nullptr) {
 		UE_LOG(LogTemp, Warning, TEXT("PowerupClass is nullptr in %s. Please update your Blueprint"), *GetName());
@@ -50,15 +57,23 @@ void AC_PickupActor::Respawn()
 void AC_PickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
+	UE_LOG(LogTemp, Warning, TEXT("AC_PickupActor: NotifyActorBeginOverlap"));
 
 	if (PowerUpInstance) {
-		PowerUpInstance->ActivatePowerup();
+		UE_LOG(LogTemp, Warning, TEXT("AC_PickupActor: NotifyActorBeginOverlap: HERE1"));
+		PowerUpInstance->ActivatePowerup(OtherActor);
 		PowerUpInstance = nullptr;
 
-		//Set timer to respawn
-		GetWorldTimerManager().SetTimer(TimerHandle_RespawnTimer, this, &AC_PickupActor::Respawn, CooldownDuration, false);
+		if (HasAuthority()) {
+			UE_LOG(LogTemp, Warning, TEXT("AC_PickupActor: NotifyActorBeginOverlap: HERE2"));
+			//Set timer to respawn
+			GetWorldTimerManager().SetTimer(TimerHandle_RespawnTimer, this, &AC_PickupActor::Respawn, CooldownDuration, false);
+		}
 	}
-	// @TODO:  Grant a powerup to player if available
+
+  // @TODO:  Grant a powerup to player if available
 
 }
+
+
 
