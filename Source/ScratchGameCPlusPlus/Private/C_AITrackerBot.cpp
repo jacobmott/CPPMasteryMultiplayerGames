@@ -70,7 +70,9 @@ FVector AC_AITrackerBot::GetNextPathPoint()
 	ACharacter* PlayerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
 
 	UNavigationPath* NavigationPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
-	if (NavigationPath->PathPoints.Num() > 0){
+
+
+	if (NavigationPath && NavigationPath->PathPoints.Num() > 0){
 		return NavigationPath->PathPoints[1];
   }
 
