@@ -81,6 +81,11 @@ void UC_HealthComponent::Heal(float HealAmount)
   OnHealthChanged.Broadcast(this, Health, -HealAmount, nullptr, nullptr, nullptr);
 }
 
+float UC_HealthComponent::GetHealth() const
+{
+	return Health;
+}
+
 void UC_HealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
   Super::GetLifetimeReplicatedProps(OutLifetimeProps);
