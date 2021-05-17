@@ -5,6 +5,7 @@
 #include "TimerManager.h"
 #include "C_HealthComponent.h"
 #include "C_GameStateBase.h"
+#include "C_PlayerState.h"
 
 AC_GameModeBase::AC_GameModeBase()
 {
@@ -17,6 +18,8 @@ AC_GameModeBase::AC_GameModeBase()
   PrimaryActorTick.TickInterval = 1.0f;
 
   GameStateClass = AC_GameStateBase::StaticClass();
+
+  PlayerStateClass = AC_PlayerState::StaticClass();
 
 }
 
@@ -52,6 +55,8 @@ void AC_GameModeBase::PrepareForNextWave()
   GetWorldTimerManager().SetTimer(TimerHandle_NextWaveStart, this, &AC_GameModeBase::StartWave, TimeBetweenWaves, false);
 
   SetWaveState(EWaveState::WaitingToStart);
+
+  RestartDeadPlayers();
 
 }
 
@@ -138,6 +143,19 @@ void AC_GameModeBase::SetWaveState(EWaveState NewState)
     GS->SetWaveState(NewState);
   }
 
+}
+
+void AC_GameModeBase::RestartDeadPlayers()
+{
+  for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It) {
+
+    APlayerController* PC = It->Get();
+
+    if (PC && PC->GetPawn() == nullptr) {
+      RestartPlayer(PC);
+    }
+
+  }
 }
 
 void AC_GameModeBase::StartPlay()

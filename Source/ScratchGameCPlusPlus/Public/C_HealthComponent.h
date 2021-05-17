@@ -19,6 +19,9 @@ public:
 	UC_HealthComponent();
 
 protected:
+
+	bool bIsDead;
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
 

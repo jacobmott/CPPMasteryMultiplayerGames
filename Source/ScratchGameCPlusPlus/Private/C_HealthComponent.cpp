@@ -3,6 +3,7 @@
 
 #include "C_HealthComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "C_GameModeBase.h"
 
 
 // Sets default values for this component's properties
@@ -13,6 +14,9 @@ UC_HealthComponent::UC_HealthComponent()
 
 
 	SetIsReplicated(true);
+
+
+	bIsDead = false;
 
 	// ...
 }
@@ -49,18 +53,29 @@ void UC_HealthComponent::OnRep_Health(float OldHealth)
 void UC_HealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 
-	if (Damage <= 0.0f) {
+	if (Damage <= 0.0f || bIsDead) {
 		return;
 	}
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
 
 	UE_LOG(LogTemp, Log, TEXT("Health Changed: %s"), *FString::SanitizeFloat(Health));
+	
+	bIsDead = Health <= 0.0f;
 
 	//This allows us to bind/subscribe to this event in blueprints so we can do things when this event triggers
 	//if we listen to the broadcast
 	OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 
+
+	if (bIsDead) {
+		AC_GameModeBase* GM = Cast<AC_GameModeBase>(GetWorld()->GetAuthGameMode());
+
+		if (GM) {
+
+			GM->OnActorKilled.Broadcast(GetOwner(), DamageCauser, InstigatedBy);
+		}
+	}
 
 }
 
