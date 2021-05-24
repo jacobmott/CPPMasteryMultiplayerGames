@@ -93,6 +93,11 @@ protected:
 	void OnRep_HitScanTrace();
 
 
+	// Bullet spread in degrees
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin=0.0f))
+	float BulletSpread;
+
+
 public:
   UFUNCTION(BlueprintCallable, Category = "Weapon")
   virtual void Fire();
