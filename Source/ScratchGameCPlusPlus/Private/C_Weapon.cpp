@@ -36,6 +36,8 @@ AC_Weapon::AC_Weapon()
 	NetUpdateFrequency = 66.0f;
 	MinNetUpdateFrequency = 33.0f;
 
+	BulletSpread = 2.0f;
+
 }
 
 void AC_Weapon::BeginPlay()
@@ -64,6 +66,9 @@ void AC_Weapon::Fire() {
 
 		FVector ShotDirection = EyeRotation.Vector();
 
+		// Bullet Spread
+		float HalfRad = FMath::DegreesToRadians(BulletSpread);
+		ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
 		FVector TraceEnd = EyeLocation + (ShotDirection * 10000);
 
 		FCollisionQueryParams QueryParams;
@@ -89,7 +94,7 @@ void AC_Weapon::Fire() {
 				ActualDamage *= 4.0f;
       }
 
-			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, MYOwner->GetInstigatorController(), this, DamageType);
+			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, MYOwner->GetInstigatorController(), MYOwner, DamageType);
 
 			PlayImpaceEffects(SurfaceType, Hit.ImpactPoint);
 
