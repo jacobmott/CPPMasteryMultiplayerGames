@@ -23,6 +23,8 @@ public:
 	AC_AITrackerBot();
 
 protected:
+
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -39,15 +41,18 @@ protected:
   USphereComponent* SphereComp;
 
 
-	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot", meta = (ClampMin = "0.0", ClampMax = "25.0", UIMin = "0.0", UIMax = "25.0"))
 	float MovementForce;
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	bool bUseVelocityChange;
-	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot", meta = (ClampMin = "600.0", ClampMax = "1000.0", UIMin = "600.0", UIMax = "1000.0"))
 	float RequiredDistanceToTarget;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UC_HealthComponent* HealthComp;
+
+
+	bool firstTimeGettingClose;
 
 	UFUNCTION()
 	void HandleTakeDamage(UC_HealthComponent* HealthCompent, float Health, float HealthDelta,
@@ -71,6 +76,8 @@ protected:
 
 	FTimerHandle TimerHandle_SelfDamage;
 
+	FTimerHandle TimerHandle_RefreshPath;
+
 	void DamageSelf();
 
 	bool bStartedSelfDestruction;
@@ -84,7 +91,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float SelfDamageInterval;
 
-
+	void RefreshPath();
 
   // Find nearby enemies and grow in 'power level' based on the amount.
   void OnCheckNearbyBots();
