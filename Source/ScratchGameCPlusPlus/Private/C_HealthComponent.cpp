@@ -17,7 +17,7 @@ UC_HealthComponent::UC_HealthComponent()
   TeamNum = 255;
 
 
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 
 
 

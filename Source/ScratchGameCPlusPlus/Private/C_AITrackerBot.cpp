@@ -224,7 +224,7 @@ void AC_AITrackerBot::Tick(float DeltaTime)
 
     if (bStartedSelfDestruction) {
 
-      float MyMaximumSpeedValue = 150.0f;
+      float MyMaximumSpeedValue = 1000.0f;
       FVector currentVelocity = MeshComp->GetPhysicsLinearVelocity();
       FVector clampedVelocity = currentVelocity.GetClampedToMaxSize(MyMaximumSpeedValue);
       MeshComp->SetPhysicsLinearVelocity(clampedVelocity);
