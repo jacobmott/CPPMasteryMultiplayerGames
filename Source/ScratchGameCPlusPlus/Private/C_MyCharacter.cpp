@@ -20,7 +20,7 @@ AC_MyCharacter::AC_MyCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-  SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+    SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
 
@@ -159,7 +159,7 @@ void AC_MyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AC_MyCharacter::EndCrouch);
 
 
-  PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AC_MyCharacter::BeginJump);
+    PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AC_MyCharacter::BeginJump);
 
 
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AC_MyCharacter::BeginZoom);
