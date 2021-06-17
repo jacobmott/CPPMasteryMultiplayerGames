@@ -82,11 +82,11 @@ public:
 
 	virtual FVector GetPawnViewLocation() const override;
 
-  UFUNCTION(BlueprintCallable, Category = "Player")
-  void StartFire();
-
-  UFUNCTION(BlueprintCallable, Category = "Player")
-  void StopFire();
+    UFUNCTION(BlueprintCallable, Category = "Player")
+    void StartFire();
+    
+    UFUNCTION(BlueprintCallable, Category = "Player")
+    void StopFire();
 
 
 };

@@ -20,8 +20,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
-	//UBoxComponent* CollisionMesh = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
+	UBoxComponent* CollisionMesh = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
 	UStaticMeshComponent* MeshComp = nullptr;
