@@ -10,7 +10,11 @@
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
 
-// Sets default values
+
+
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"// Sets default values
+
 APawnSpaceShip::APawnSpaceShip()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -19,6 +23,10 @@ APawnSpaceShip::APawnSpaceShip()
 	bMoveUp = false;
 	bMoveForward = false;
 	bFixRotation = false;
+	bCameraRotateX = false;
+	bCameraRotateY = false;
+	CameraXDirection = 0.0f;
+	CameraYDirection = 0.0f;
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
@@ -64,9 +72,19 @@ void APawnSpaceShip::BeginPlay()
 // Called every frame
 void APawnSpaceShip::Tick(float DeltaTime)
 {
+
 	Super::Tick(DeltaTime);
+	
 	float TargetFOV = WantsToZoom ? ZoomedFOV : DefaultFOV;
 
+	if (bCameraRotateX || bCameraRotateY) {
+		FRotator NewRotation = FRotator(SpringArmComp->GetRelativeRotation().Pitch + CameraXDirection, SpringArmComp->GetRelativeRotation().Yaw + CameraYDirection, SpringArmComp->GetRelativeRotation().Roll);
+		SpringArmComp->SetRelativeRotation(NewRotation);
+		CameraXDirection = 0.0f;
+		CameraYDirection = 0.0f;
+		bCameraRotateX = false;
+		bCameraRotateY = false;
+	}
 
 	float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomedInterpSpeed);
 	CameraComp->SetFieldOfView(NewFOV);
@@ -133,6 +151,13 @@ void APawnSpaceShip::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("FixRotation", IE_Pressed, this, &APawnSpaceShip::FixRotation);
 
+	PlayerInputComponent->BindAction("CameraZoomOut", IE_Pressed, this, &APawnSpaceShip::CameraZoomOut);
+	PlayerInputComponent->BindAction("CameraZoomIn", IE_Pressed, this, &APawnSpaceShip::CameraZoomIn);
+
+
+	PlayerInputComponent->BindAxis("CameraRotateX", this, &APawnSpaceShip::CameraRotateX);
+	PlayerInputComponent->BindAxis("CameraRotateY", this, &APawnSpaceShip::CameraRotateY);
+
 }
 
 void APawnSpaceShip::YawMoveRotate(float Value) {
@@ -192,4 +217,34 @@ void APawnSpaceShip::BeginZoom()
 void APawnSpaceShip::EndZoom()
 {
 	WantsToZoom = false;
+}
+
+
+void APawnSpaceShip::CameraRotateX(float Value) {
+	bCameraRotateX = false;
+	if (Value > 0 || Value < 0) {
+		CameraXDirection = Value;
+		bCameraRotateX = true;
+	}
+	UE_LOG(LogTemp, Log, TEXT("CameraRotateX: %s)"), *FString::SanitizeFloat(Value), true);
+}
+
+void APawnSpaceShip::CameraRotateY(float Value) {
+	bCameraRotateY = false;
+	if (Value > 0 || Value < 0) {
+		CameraYDirection = Value;
+		bCameraRotateY = true;
+	}
+	UE_LOG(LogTemp, Log, TEXT("CameraRotateY: %s)"), *FString::SanitizeFloat(Value), true);
+}
+
+
+void APawnSpaceShip::CameraZoomOut()
+{
+	SpringArmComp->TargetArmLength += 200;
+}
+
+void APawnSpaceShip::CameraZoomIn()
+{
+	SpringArmComp->TargetArmLength -= 200;
 }

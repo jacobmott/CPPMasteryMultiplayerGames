@@ -34,12 +34,18 @@ protected:
 	void MoveForward(float Value);
 	void YawMoveRotate(float Value);
 	void FixRotation();
+	void CameraRotateX(float Value);
+	void CameraRotateY(float Value);
 	bool bWantToYaw;
 	bool bMoveForward;
 	bool bMoveUp;
 	float ForwardDirection;
 	float UpDirection;
 	bool bFixRotation; 
+	bool bCameraRotateX;
+	float CameraXDirection;
+	bool bCameraRotateY;
+	float CameraYDirection;
 	FRotator InitalRotation;
 	FVector MovementDirection;
 
@@ -59,6 +65,9 @@ protected:
 	USpringArmComponent* SpringArmComp;
 
 	bool WantsToZoom;
+
+	void CameraZoomOut();
+	void CameraZoomIn();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Player");
 	float ZoomedFOV;
