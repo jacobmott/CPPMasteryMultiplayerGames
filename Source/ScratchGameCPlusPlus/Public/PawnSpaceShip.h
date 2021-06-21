@@ -23,11 +23,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
-	//UBoxComponent* CollisionMesh = nullptr;
+  UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
+	UBoxComponent* CollisionMesh = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
 	UStaticMeshComponent* MeshComp = nullptr;
+
+	UFUNCTION()
+  void OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+	void OnBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 
 	float Yaw = 0;
 	void UpVectorMove(float Value);
@@ -80,6 +85,10 @@ protected:
 	void HandleCollision(FHitResult* Hit);
 
 public:	
+
+	bool isPossesed;
+	//virtual void OnPossess(APawn* InPawn) override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

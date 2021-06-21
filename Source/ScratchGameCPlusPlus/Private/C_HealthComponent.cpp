@@ -10,16 +10,14 @@
 UC_HealthComponent::UC_HealthComponent()
 { 
 
-	DefaultHealth = 100.0f;
+  DefaultHealth = 100.0f;
 
   bIsDead = false;
 
   TeamNum = 255;
 
 
-	SetIsReplicatedByDefault(true);
-
-
+  SetIsReplicatedByDefault(true);
 
 
 	// ...
@@ -62,7 +60,7 @@ void UC_HealthComponent::HandleTakeAnyDamage(AActor* DamagedActor, float Damage,
 	}
 
 	if (DamagedActor != DamagedActor && IsFriendly(DamagedActor, DamageCauser)) {
-		return;
+	  return;
 	}
 
 	Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);

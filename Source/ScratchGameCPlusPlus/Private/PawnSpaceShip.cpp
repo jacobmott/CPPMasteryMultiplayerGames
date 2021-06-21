@@ -36,12 +36,14 @@ APawnSpaceShip::APawnSpaceShip()
 	MeshComp->BodyInstance.SetUseCCD(true);
 	MeshComp->SetUseCCD(true);
 
-	//CollisionMesh = CreateDefaultSubobject<UBoxComponent>(FName("Collision Mesh"));
-	//CollisionMesh->SetBoxExtent(FVector(200,200,200));
-	//CollisionMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//CollisionMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	//CollisionMesh->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
-	//CollisionMesh->SetupAttachment(RootComponent);
+	CollisionMesh = CreateDefaultSubobject<UBoxComponent>(FName("Area Decision Mesh"));
+	CollisionMesh->SetBoxExtent(FVector(500,500,100));
+	CollisionMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	CollisionMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	CollisionMesh->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	CollisionMesh->SetGenerateOverlapEvents(true);
+	CollisionMesh->IgnoreActorWhenMoving(this, true);
+	CollisionMesh->SetupAttachment(RootComponent);
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = false;
@@ -56,6 +58,8 @@ APawnSpaceShip::APawnSpaceShip()
 
 	ZoomedFOV = 65.0f;
 
+	isPossesed = false;
+
 
 
 
@@ -67,6 +71,8 @@ void APawnSpaceShip::BeginPlay()
 	Super::BeginPlay();
 	DefaultFOV = CameraComp->FieldOfView;
 	InitalRotation = GetActorRotation();
+  CollisionMesh->OnComponentBeginOverlap.AddDynamic(this, &APawnSpaceShip::OnBoxOverlapBegin);
+  CollisionMesh->OnComponentEndOverlap.AddDynamic(this, &APawnSpaceShip::OnBoxOverlapEnd);
 }
 
 // Called every frame
@@ -248,3 +254,52 @@ void APawnSpaceShip::CameraZoomIn()
 {
 	SpringArmComp->TargetArmLength -= 200;
 }
+
+
+//void APawnSpaceShip::OnPossess(APawn* InPawn) {
+//	Super::OnPossess(InPawn);
+//}
+
+void APawnSpaceShip::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+
+  APawn* Pawn = Cast<APawn>(OtherActor);
+  if (Pawn == this) {
+    return;
+  }
+
+	if (isPossesed) {
+		return;
+	}
+
+	//UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapBegin called"));
+	if (GEngine){
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapBegin called"));
+  }
+		
+
+	//Pawn->Controll
+	AController* PawnController = Pawn->GetController();
+	PawnController->UnPossess();
+	PawnController->Possess(this);
+	//Controller->Possess(this);
+
+
+	auto what = 0.0f;
+
+
+	auto another = 0.0f;
+
+	isPossesed = true;
+
+	auto hanother = 0.0f;
+}
+
+void APawnSpaceShip::OnBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
+{
+  //UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapEnd called"));
+  if (GEngine) {
+    GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapEnd called"));
+  }
+}
+

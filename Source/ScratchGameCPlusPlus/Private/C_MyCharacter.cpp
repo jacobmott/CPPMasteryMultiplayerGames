@@ -20,11 +20,12 @@ AC_MyCharacter::AC_MyCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 
-    SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+  SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
