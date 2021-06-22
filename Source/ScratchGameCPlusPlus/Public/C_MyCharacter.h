@@ -72,6 +72,9 @@ protected:
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
 	bool bDied;
 
+	APawn* VehicleInRangePawn;
+
+	bool vehiclePossed;
 
 public:	
 	// Called every frame
@@ -82,11 +85,16 @@ public:
 
 	virtual FVector GetPawnViewLocation() const override;
 
-    UFUNCTION(BlueprintCallable, Category = "Player")
-    void StartFire();
-    
-    UFUNCTION(BlueprintCallable, Category = "Player")
-    void StopFire();
+  UFUNCTION(BlueprintCallable, Category = "Player")
+  void StartFire();
+
+  UFUNCTION(BlueprintCallable, Category = "Player")
+  void StopFire();
+
+	void EnterVehicle();
+
+public:
+	void SetVehicleInRange(APawn* VehiclePawn);
 
 
 };

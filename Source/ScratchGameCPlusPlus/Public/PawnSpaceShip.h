@@ -9,6 +9,7 @@
 class UBoxComponent;
 class UCameraComponent;
 class USpringArmComponent;
+class AC_MyCharacter;
 
 UCLASS()
 class SCRATCHGAMECPLUSPLUS_API APawnSpaceShip : public APawn
@@ -84,10 +85,17 @@ protected:
 
 	void HandleCollision(FHitResult* Hit);
 
+
+
+protected:
+	AC_MyCharacter* CurrentPilot;
+
 public:	
 
 	bool isPossesed;
 	//virtual void OnPossess(APawn* InPawn) override;
+
+	//void Enter(AC_MyCharacter* Pilot);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

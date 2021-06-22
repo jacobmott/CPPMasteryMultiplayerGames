@@ -19,7 +19,7 @@ AC_MyCharacter::AC_MyCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-
+	bGenerateOverlapEventsDuringLevelStreaming = 0;
   SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
@@ -37,6 +37,8 @@ AC_MyCharacter::AC_MyCharacter()
 	WeaponAttachSocketName = "WeaponSocket";
 
 	HealthComponent = CreateDefaultSubobject<UC_HealthComponent>(TEXT("HealthComp"));
+
+	vehiclePossed = false;
 
 
 }
@@ -160,7 +162,7 @@ void AC_MyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AC_MyCharacter::EndCrouch);
 
 
-    PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AC_MyCharacter::BeginJump);
+  PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AC_MyCharacter::BeginJump);
 
 
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AC_MyCharacter::BeginZoom);
@@ -169,6 +171,9 @@ void AC_MyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AC_MyCharacter::StartFire);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AC_MyCharacter::StopFire);
+
+
+	PlayerInputComponent->BindAction("EnterVehicle", IE_Pressed, this, &AC_MyCharacter::EnterVehicle);
 }
 
 FVector AC_MyCharacter::GetPawnViewLocation() const
@@ -189,5 +194,53 @@ void AC_MyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AC_MyCharacter, CurrentWeapon);
 	DOREPLIFETIME(AC_MyCharacter, bDied);
 	
+
+}
+
+
+void AC_MyCharacter::SetVehicleInRange(APawn* VehiclePawn)
+{
+  VehicleInRangePawn = VehiclePawn;
+}
+
+
+void AC_MyCharacter::EnterVehicle()
+{
+  if (!VehicleInRangePawn) {
+		return;
+  }
+	if (vehiclePossed) {
+		return;
+	}
+
+
+
+  TArray<UStaticMeshComponent*> StaticComps;
+	VehicleInRangePawn->GetComponents<UStaticMeshComponent>(StaticComps);
+	UStaticMeshComponent* VehicleStaticMesh = StaticComps[0];
+
+  AttachToComponent(VehicleStaticMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "PilotSeat");
+  //APlayerController* MyCharacterController = Cast<APlayerController>(Pilot->GetController());
+  //MyCharacterController->Possess(this);
+
+  //AC_MyCharacter* MyCharacter = Cast<AC_MyCharacter>(OtherActor);
+  GetMovementComponent()->StopMovementImmediately();
+  GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+  GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+	GetCapsuleComponent()->SetSimulatePhysics(false);
+	this->SetActorEnableCollision(false);
+
+  AController* PawnController = GetController();
+  PawnController->UnPossess();
+  PawnController->Possess(VehicleInRangePawn);
+
+
+
+
+	vehiclePossed = true;
+
+
+
 
 }

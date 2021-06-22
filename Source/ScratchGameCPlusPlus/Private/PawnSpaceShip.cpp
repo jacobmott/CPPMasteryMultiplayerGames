@@ -9,8 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/StaticMeshComponent.h"
-
-
+#include "C_MyCharacter.h"
+#include "Components/CapsuleComponent.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"// Sets default values
@@ -19,6 +19,11 @@ APawnSpaceShip::APawnSpaceShip()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+  //Since the collision mesh is dealing with overlap events when a character/pawn gets close to the space ship
+  //we turn it off for the mesh compoenent of this actor... the mesh component only really needs block physics
+	bGenerateOverlapEventsDuringLevelStreaming = false;
+
+
 	bWantToYaw = false;
 	bMoveUp = false;
 	bMoveForward = false;
@@ -30,11 +35,26 @@ APawnSpaceShip::APawnSpaceShip()
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetSimulatePhysics(true);
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+  //Collision section in blueprints
+  MeshComp->SetCollisionProfileName(TEXT("PhysicsActor"));
+  MeshComp->CanCharacterStepUpOn = ECB_Yes;
 	RootComponent = MeshComp;
 	MeshComp->BodyInstance.bLockYRotation = true;
 	MeshComp->BodyInstance.bLockXRotation = true;
 	MeshComp->BodyInstance.SetUseCCD(true);
 	MeshComp->SetUseCCD(true);
+
+  //Physics section in blueprints
+  MeshComp->SetSimulatePhysics(true);
+  MeshComp->SetMassOverrideInKg(NAME_None, 100000.0f);
+  MeshComp->bReplicatePhysicsToAutonomousProxy = true;
+  MeshComp->bApplyImpulseOnDamage = true;
+  MeshComp->SetEnableGravity(false);
+  MeshComp->SetLinearDamping(1.0f);
+  MeshComp->SetAngularDamping(1.0f);
+	//Since the collision mesh is dealing with overlap events when a character/pawn gets close to the space ship
+	//we turn it off for the mesh compoenent of this actor... the mesh component only really needs block physics
+	MeshComp->SetGenerateOverlapEvents(false);
 
 	CollisionMesh = CreateDefaultSubobject<UBoxComponent>(FName("Area Decision Mesh"));
 	CollisionMesh->SetBoxExtent(FVector(500,500,100));
@@ -125,6 +145,10 @@ void APawnSpaceShip::Tick(float DeltaTime)
 // Called to bind functionality to input
 void APawnSpaceShip::HandleCollision(FHitResult* Hit)
 {
+
+	if (Hit->Actor != nullptr && Hit->Actor == CurrentPilot) {
+		return;
+	}
 	if (Hit->IsValidBlockingHit() || bFixRotation) {
 		bFixRotation = false;
 		//SetActorRotation(InitalRotation);
@@ -171,12 +195,12 @@ void APawnSpaceShip::YawMoveRotate(float Value) {
 	if (Value > 0) {
 		Yaw = 1;
 		bWantToYaw = true;
-		UE_LOG(LogTemp, Log, TEXT("YawMoveRotate: %s)"), *FString::SanitizeFloat(Value), true);
+		//UE_LOG(LogTemp, Log, TEXT("YawMoveRotate: %s)"), *FString::SanitizeFloat(Value), true);
 	}
 	if (Value < 0) {
 		Yaw = -1;
 		bWantToYaw = true;
-		UE_LOG(LogTemp, Log, TEXT("YawMoveRotate: %s)"), *FString::SanitizeFloat(Value), true);
+		//UE_LOG(LogTemp, Log, TEXT("YawMoveRotate: %s)"), *FString::SanitizeFloat(Value), true);
 	}
 
 
@@ -193,7 +217,7 @@ void APawnSpaceShip::UpVectorMove(float Value) {
 		UpDirection = -1;
 		bMoveUp = true;
 	}
-	UE_LOG(LogTemp, Log, TEXT("UpVectorMove: %s)"), *FString::SanitizeFloat(Value), true);
+  //UE_LOG(LogTemp, Log, TEXT("UpVectorMove: %s)"), *FString::SanitizeFloat(Value), true);
 
 }
 
@@ -207,7 +231,7 @@ void APawnSpaceShip::MoveForward(float Value) {
 		ForwardDirection = -1;
 		bMoveForward = true;
 	}
-	UE_LOG(LogTemp, Log, TEXT("MoveForward: %s)"), *FString::SanitizeFloat(Value), true);
+	//UE_LOG(LogTemp, Log, TEXT("MoveForward: %s)"), *FString::SanitizeFloat(Value), true);
 }
 
 void APawnSpaceShip::FixRotation()
@@ -232,7 +256,7 @@ void APawnSpaceShip::CameraRotateX(float Value) {
 		CameraXDirection = Value;
 		bCameraRotateX = true;
 	}
-	UE_LOG(LogTemp, Log, TEXT("CameraRotateX: %s)"), *FString::SanitizeFloat(Value), true);
+	//UE_LOG(LogTemp, Log, TEXT("CameraRotateX: %s)"), *FString::SanitizeFloat(Value), true);
 }
 
 void APawnSpaceShip::CameraRotateY(float Value) {
@@ -241,7 +265,7 @@ void APawnSpaceShip::CameraRotateY(float Value) {
 		CameraYDirection = Value;
 		bCameraRotateY = true;
 	}
-	UE_LOG(LogTemp, Log, TEXT("CameraRotateY: %s)"), *FString::SanitizeFloat(Value), true);
+	//UE_LOG(LogTemp, Log, TEXT("CameraRotateY: %s)"), *FString::SanitizeFloat(Value), true);
 }
 
 
@@ -263,43 +287,72 @@ void APawnSpaceShip::CameraZoomIn()
 void APawnSpaceShip::OnBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
+	if (CurrentPilot) {
+		return;
+	}
+
+  //UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapBegin called"));
+  if (GEngine) {
+    GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapBegin called"));
+  }
+
+  //if (isPossesed) {
+  //  return;
+  //}
+
   APawn* Pawn = Cast<APawn>(OtherActor);
   if (Pawn == this) {
     return;
   }
 
-	if (isPossesed) {
-		return;
-	}
+	AC_MyCharacter* MyCharacter = Cast<AC_MyCharacter>(OtherActor);
+	CurrentPilot = MyCharacter;
+  //isPossesed = true;
+	MyCharacter->SetVehicleInRange(this);
 
-	//UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapBegin called"));
-	if (GEngine){
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapBegin called"));
-  }
-		
+	//AController* PawnController = Pawn->GetController();
+	//PawnController->UnPossess();
+	//PawnController->Possess(this);
 
-	//Pawn->Controll
-	AController* PawnController = Pawn->GetController();
-	PawnController->UnPossess();
-	PawnController->Possess(this);
-	//Controller->Possess(this);
+	//CurrentPilot->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  //TriggerCapsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  //MyCharacter->GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+  //APlayerController* ShipController = Cast<APlayerController>(GetController());
+  //ShipController->Possess(MyCharacter);
+  //UE_LOG(LogTemp, Warning, TEXT("We Began"));
+  //CurrentPilot = MyCharacter;
 
-
-	auto what = 0.0f;
-
-
-	auto another = 0.0f;
-
-	isPossesed = true;
-
-	auto hanother = 0.0f;
 }
+
+
+
+//void APawnSpaceShip::Enter(AC_MyCharacter* Pilot)
+//{
+//
+//  Pilot->AttachToComponent(MeshComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "PilotSeat");
+//  //APlayerController* MyCharacterController = Cast<APlayerController>(Pilot->GetController());
+//  //MyCharacterController->Possess(this);
+//
+//  //AC_MyCharacter* MyCharacter = Cast<AC_MyCharacter>(OtherActor);
+//
+//
+//  AController* PawnController = Pilot->GetController();
+//  PawnController->UnPossess();
+//  PawnController->Possess(this);
+//
+//
+//	Pilot->GetMovementComponent()->StopMovementImmediately();
+//  Pilot->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+//
+//	isPossesed = true;
+//  CurrentPilot = Pilot;
+//}
 
 void APawnSpaceShip::OnBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
 {
   //UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapEnd called"));
   if (GEngine) {
-    GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapEnd called"));
+    GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapEnd called"));
   }
 }
 
