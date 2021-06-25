@@ -39,7 +39,7 @@ AC_MyCharacter::AC_MyCharacter()
 	HealthComponent = CreateDefaultSubobject<UC_HealthComponent>(TEXT("HealthComp"));
 
 	vehiclePossed = false;
-
+	bNotMoving = false;
 
 }
 
@@ -72,12 +72,17 @@ void AC_MyCharacter::BeginPlay()
 
 void AC_MyCharacter::MoveForward(float Value)
 {
+
+  if (GEngine) {
+    //GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("AC_MyCharacter: %f MoveForward called"), Value));
+  }
 	AddMovementInput(GetActorForwardVector() * Value);
 
 }
 
 void AC_MyCharacter::MoveRight(float Value)
 {
+
 	AddMovementInput(GetActorRightVector() * Value);
 }
 
@@ -174,6 +179,7 @@ void AC_MyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 
 	PlayerInputComponent->BindAction("EnterVehicle", IE_Pressed, this, &AC_MyCharacter::EnterVehicle);
+
 }
 
 FVector AC_MyCharacter::GetPawnViewLocation() const
@@ -203,44 +209,178 @@ void AC_MyCharacter::SetVehicleInRange(APawn* VehiclePawn)
   VehicleInRangePawn = VehiclePawn;
 }
 
+//void AC_MyCharacter::ExitVehicle() {
+//
+//
+//  // UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapEnd called"));
+//  if (GEngine) {
+//    GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("AC_MyCharacter ExitVehicle called"));
+//  }
+//
+//	if (!VehicleInRangePawn && !vehiclePossed) {
+//		return;
+//	}
+//
+//  //DidAlreadyOverlap = true;
+//	
+//  ///DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, false));
+//  //CurrentPilot->AttachToComponent(CurrentPilot->GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+//	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+//
+//  //APlayerController* ShipController = Cast<APlayerController>(GetController());
+//
+//  AController* PawnController = VehicleInRangePawn->GetController();
+//  PawnController->UnPossess();
+//  PawnController->Possess(this);
+//	SetActorLocation(GetActorLocation() + FVector(500.0f, 500.0f, 500.0f), false);
+//	SetActorRotation(FRotator(0.0f, 0.0f, 0.0f));
+//  vehiclePossed = false;
+//	VehicleInRangePawn = nullptr;
+//	SetActorEnableCollision(true);
+//	GetCharacterMovement()->StopMovementImmediately();
+//	//GetMovementComponent()->StopMovementImmediately
+//  GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+//  GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+//  GetCapsuleComponent()->SetEnableGravity(true);
+//  GetCapsuleComponent()->SetCollisionProfileName(TEXT("Pawn"));
+//  GetCapsuleComponent()->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+//  GetCapsuleComponent()->SetGenerateOverlapEvents(true);
+//	GetCapsuleComponent()->SetSimulatePhysics(true);
+//
+//	GetCharacterMovement()->SetActive(true, true);
+//	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+//	
+//	//GetMovementComponent()->SetMovementMode()
+//  GetMesh()->BodyInstance.bLockYRotation = true;
+//	GetMesh()->BodyInstance.bLockXRotation = true;
+//	GetMesh()->SetCollisionProfileName(TEXT("CharacterMesh"));
+//  //GetWorldTimerManager().SetTimer(TimerHandle_FlipDidAlreadyOverlap, this, &AC_MyShip::FlipDidAlreadyOverlap, 1.0f, false, 3.0f);
+//
+//}
 
+
+//void AC_MyCharacter::EnterVehicle()
+//{
+//  if (!VehicleInRangePawn) {
+//		return;
+//  }
+//	if (vehiclePossed) {
+//		return;
+//	}
+//
+//	bNotMoving = true;
+//  TArray<UStaticMeshComponent*> StaticComps;
+//	VehicleInRangePawn->GetComponents<UStaticMeshComponent>(StaticComps);
+//	UStaticMeshComponent* VehicleStaticMesh = StaticComps[0];
+//
+//  AttachToComponent(VehicleStaticMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "PilotSeat");
+//  //APlayerController* MyCharacterController = Cast<APlayerController>(Pilot->GetController());
+//  //MyCharacterController->Possess(this);
+//	GetCharacterMovement()->StopMovementImmediately();
+//  //AC_MyCharacter* MyCharacter = Cast<AC_MyCharacter>(OtherActor);
+//  //GetMovementComponent()->StopMovementImmediately();
+//  GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+//	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+//  GetCapsuleComponent()->SetGenerateOverlapEvents(false);
+//	GetCapsuleComponent()->SetSimulatePhysics(false);
+//	this->SetActorEnableCollision(false);
+//
+//  AController* PawnController = GetController();
+//  PawnController->UnPossess();
+//  PawnController->Possess(VehicleInRangePawn);
+//	VehicleStaticMesh->SetEnableGravity(false);
+//
+//
+//
+//	vehiclePossed = true;
+//
+//
+//}
+
+
+//Unreal pawn possesssion
+//http://jollymonsterstudio.com/2019/09/05/unreal-engine-c-fundamentals-character-possession-and-changing-materials/
+//unreal phyics goes crazy after calling attachtocoponent
+//https://answers.unrealengine.com/questions/664076/actors-physics-go-crazy-on-attach.html
+// Collision Overview
+//https://docs.unrealengine.com/4.26/en-US/InteractiveExperiences/Physics/Collision/Overview/
 void AC_MyCharacter::EnterVehicle()
 {
   if (!VehicleInRangePawn) {
-		return;
+    return;
   }
-	if (vehiclePossed) {
-		return;
-	}
-
-
+  if (vehiclePossed) {
+    return;
+  }
 
   TArray<UStaticMeshComponent*> StaticComps;
-	VehicleInRangePawn->GetComponents<UStaticMeshComponent>(StaticComps);
-	UStaticMeshComponent* VehicleStaticMesh = StaticComps[0];
+  VehicleInRangePawn->GetComponents<UStaticMeshComponent>(StaticComps);
+  UStaticMeshComponent* VehicleStaticMesh = StaticComps[0];
 
-  AttachToComponent(VehicleStaticMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "PilotSeat");
-  //APlayerController* MyCharacterController = Cast<APlayerController>(Pilot->GetController());
-  //MyCharacterController->Possess(this);
-
-  //AC_MyCharacter* MyCharacter = Cast<AC_MyCharacter>(OtherActor);
-  GetMovementComponent()->StopMovementImmediately();
-  GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
-  GetCapsuleComponent()->SetGenerateOverlapEvents(false);
-	GetCapsuleComponent()->SetSimulatePhysics(false);
-	this->SetActorEnableCollision(false);
-
-  AController* PawnController = GetController();
-  PawnController->UnPossess();
-  PawnController->Possess(VehicleInRangePawn);
-
-
-
-
-	vehiclePossed = true;
-
+  
+  // save a copy of our controller
+  AController* SavedController = GetController();
+  // unpossess first ( helps with multiplayer )
+  // disable movement mode
+	GetCharacterMovement()->StopMovementImmediately();
+  GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	MoveIgnoreActorAdd(VehicleInRangePawn);
+	SavedController->UnPossess();
+  // possess our new actor
+  SavedController->Possess(VehicleInRangePawn);
+	VehicleInRangePawn->MoveIgnoreActorAdd(this);
+	VehicleStaticMesh->SetSimulatePhysics(false);
+	AttachToComponent(VehicleStaticMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, "PilotSeat");
+	VehicleStaticMesh->SetSimulatePhysics(true);
+	VehicleStaticMesh->SetEnableGravity(false);
+	GetMesh()->SetEnableGravity(false);
+	GetCapsuleComponent()->SetEnableGravity(false);
+  vehiclePossed = true;
 
 
+}
 
+
+
+
+void AC_MyCharacter::ExitVehicle() {
+
+
+  // UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapEnd called"));
+  if (GEngine) {
+    GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("AC_MyCharacter ExitVehicle called"));
+  }
+
+  if (!VehicleInRangePawn && !vehiclePossed) {
+    return;
+  }
+
+  //DidAlreadyOverlap = true;
+
+  ///DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, EDetachmentRule::KeepRelative, EDetachmentRule::KeepWorld, false));
+  //CurrentPilot->AttachToComponent(CurrentPilot->GetCapsuleComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+  DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+
+  // save a copy of our controller
+  AController* SavedController = VehicleInRangePawn->GetController();
+  // unpossess first ( helps with multiplayer )
+  SavedController->UnPossess();
+	SavedController->Possess(this);
+	GetMesh()->SetEnableGravity(true);
+	GetCapsuleComponent()->SetEnableGravity(true);
+	SetActorLocation(GetActorLocation() + FVector(500.0f, 500.0f, 500.0f), false);
+  // disable movement mode
+  VehicleInRangePawn->MoveIgnoreActorRemove(this);
+  this->MoveIgnoreActorRemove(VehicleInRangePawn);
+  GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+
+  TArray<UStaticMeshComponent*> StaticComps;
+  VehicleInRangePawn->GetComponents<UStaticMeshComponent>(StaticComps);
+  UStaticMeshComponent* VehicleStaticMesh = StaticComps[0];
+  // possess our new actor
+
+
+	VehicleInRangePawn = nullptr;
+	vehiclePossed = false;
 }

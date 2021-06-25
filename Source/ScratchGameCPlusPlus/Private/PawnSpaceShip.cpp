@@ -58,11 +58,21 @@ APawnSpaceShip::APawnSpaceShip()
 
 	CollisionMesh = CreateDefaultSubobject<UBoxComponent>(FName("Area Decision Mesh"));
 	CollisionMesh->SetBoxExtent(FVector(500,500,100));
+	//CollisionMesh->SetSimulatePhysics(true);
 	CollisionMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	CollisionMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	CollisionMesh->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	CollisionMesh->SetGenerateOverlapEvents(true);
+	CollisionMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	//Collision Response set in C++ but not visible in Bluep
+	//https://forums.unrealengine.com/t/collision-response-set-in-c-but-not-visible-in-blueprint/136334/2
+	CollisionMesh->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	//In order to recieve hit events, you have to set the channel to block, not everlap
+	CollisionMesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	CollisionMesh->CanCharacterStepUpOn = ECB_No;
+	// This is equivalent to Simulate hit events in the pawns/collision component in the unreal editor details pane
+	//CollisionMesh->SetNotifyRigidBodyCollision(true);
+	CollisionMesh->BodyInstance.bNotifyRigidBodyCollision = true;
 	CollisionMesh->IgnoreActorWhenMoving(this, true);
+	CollisionMesh->SetEnableGravity(false);
 	CollisionMesh->SetupAttachment(RootComponent);
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
@@ -80,6 +90,8 @@ APawnSpaceShip::APawnSpaceShip()
 
 	isPossesed = false;
 
+	bPilotExited = false;
+
 
 
 
@@ -93,6 +105,8 @@ void APawnSpaceShip::BeginPlay()
 	InitalRotation = GetActorRotation();
   CollisionMesh->OnComponentBeginOverlap.AddDynamic(this, &APawnSpaceShip::OnBoxOverlapBegin);
   CollisionMesh->OnComponentEndOverlap.AddDynamic(this, &APawnSpaceShip::OnBoxOverlapEnd);
+
+	CollisionMesh->OnComponentHit.AddDynamic(this, &APawnSpaceShip::OnComponentHitCollisionMesh);
 }
 
 // Called every frame
@@ -187,6 +201,24 @@ void APawnSpaceShip::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 	PlayerInputComponent->BindAxis("CameraRotateX", this, &APawnSpaceShip::CameraRotateX);
 	PlayerInputComponent->BindAxis("CameraRotateY", this, &APawnSpaceShip::CameraRotateY);
+
+	PlayerInputComponent->BindAction("ExitVehicle", IE_Pressed, this, &APawnSpaceShip::ExitVehicle);
+
+}
+
+void APawnSpaceShip::ExitVehicle() {
+  // UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapEnd called"));
+  if (GEngine) {
+    GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("APawnSpaceShip ExitVehicle called"));
+  }
+
+  if (!CurrentPilot) {
+    return;
+  }
+	CurrentPilot->ExitVehicle();
+	CurrentPilot = nullptr;
+	bPilotExited = true;
+	MeshComp->SetEnableGravity(true);
 
 }
 
@@ -352,7 +384,36 @@ void APawnSpaceShip::OnBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, A
 {
   //UE_LOG(LogTemp, Log, TEXT("APawnSpaceShip OnOverlapEnd called"));
   if (GEngine) {
-    GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapEnd called"));
+    //GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("APawnSpaceShip OnOverlapEnd called"));
   }
+	//CurrentPilot = nullptr;
+}
+
+void APawnSpaceShip::OnComponentHitCollisionMesh(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+  if (GEngine) {
+    GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Yellow, TEXT("APawnSpaceShip OnComponentHitCollisionMesh called"));
+  }
+	//Do nothing, we only want to dampen the landing when the pilot ejected, since the ship may be falling
+	if (CurrentPilot) {
+		return;
+	}
+	if (!bPilotExited) {
+		return;
+	}
+
+	if (CollisionMesh->GetComponentVelocity().Z < 0) {
+		//we are falling, and we hit the ground, dampen the fall and stop us from moving
+		bPilotExited = false;
+		MeshComp->SetEnableGravity(false);
+    float MyMaximumSpeedValue = 0.0f;
+    FVector currentVelocity = MeshComp->GetPhysicsLinearVelocity();
+    FVector clampedVelocity = currentVelocity.GetClampedToMaxSize(MyMaximumSpeedValue);
+    MeshComp->SetPhysicsLinearVelocity(clampedVelocity);
+		MyMaximumSpeedValue = 10000.0f;
+		clampedVelocity = currentVelocity.GetClampedToMaxSize(MyMaximumSpeedValue);
+		MeshComp->SetPhysicsLinearVelocity(clampedVelocity);
+	}
+
 }
 

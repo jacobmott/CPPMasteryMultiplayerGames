@@ -35,6 +35,10 @@ protected:
 	UFUNCTION()
 	void OnBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 
+
+	UFUNCTION()
+	void OnComponentHitCollisionMesh(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 	float Yaw = 0;
 	void UpVectorMove(float Value);
 	void MoveForward(float Value);
@@ -52,6 +56,7 @@ protected:
 	float CameraXDirection;
 	bool bCameraRotateY;
 	float CameraYDirection;
+	bool bPilotExited;
 	FRotator InitalRotation;
 	FVector MovementDirection;
 
@@ -85,7 +90,7 @@ protected:
 
 	void HandleCollision(FHitResult* Hit);
 
-
+	void ExitVehicle();
 
 protected:
 	AC_MyCharacter* CurrentPilot;

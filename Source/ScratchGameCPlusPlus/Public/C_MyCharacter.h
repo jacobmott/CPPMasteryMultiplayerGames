@@ -76,6 +76,10 @@ protected:
 
 	bool vehiclePossed;
 
+	bool bNotMoving;
+
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -92,6 +96,8 @@ public:
   void StopFire();
 
 	void EnterVehicle();
+
+	void ExitVehicle();
 
 public:
 	void SetVehicleInRange(APawn* VehiclePawn);
