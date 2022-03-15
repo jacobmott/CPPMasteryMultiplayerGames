@@ -34,9 +34,10 @@ APawnSpaceShip::APawnSpaceShip()
 	CameraYDirection = 0.0f;
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetSimulatePhysics(true);
+	MeshComp->SetCollisionProfileName(UCollisionProfile::CustomCollisionProfileName);
 	MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+	MeshComp->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Ignore);
   //Collision section in blueprints
-  MeshComp->SetCollisionProfileName(TEXT("PhysicsActor"));
   MeshComp->CanCharacterStepUpOn = ECB_Yes;
 	RootComponent = MeshComp;
 	MeshComp->BodyInstance.bLockYRotation = true;

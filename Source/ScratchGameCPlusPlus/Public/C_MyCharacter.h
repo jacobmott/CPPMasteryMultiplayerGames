@@ -14,93 +14,94 @@ class UC_HealthComponent;
 UCLASS()
 class SCRATCHGAMECPLUSPLUS_API AC_MyCharacter : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	AC_MyCharacter();
+    // Sets default values for this character's properties
+    AC_MyCharacter();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
 
-	void MoveForward(float Value);
-	void MoveRight(float Value);
+    void MoveForward(float Value);
+    void MoveRight(float Value);
 
-	void BeginCrouch();
-	void EndCrouch();
+    void BeginCrouch();
+    void EndCrouch();
 
-  void BeginJump();
+    void BeginJump();
 
-	void BeginZoom();
-	void EndZoom();
+    void BeginZoom();
+    void EndZoom();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
-	UCameraComponent* CameraComp;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
+    UCameraComponent* CameraComp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
-	USpringArmComponent* SpringArmComp;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
+    USpringArmComponent* SpringArmComp;
 
-	bool WantsToZoom;
+    bool WantsToZoom;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Player");
-	float ZoomedFOV;
+    UPROPERTY(EditDefaultsOnly, Category = "Player");
+    float ZoomedFOV;
 
-	float DefaultFOV;
+    float DefaultFOV;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100));
-	float ZoomedInterpSpeed;
+    UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100));
+    float ZoomedInterpSpeed;
 
-	UPROPERTY(Replicated)
-	AC_Weapon* CurrentWeapon;
+    UPROPERTY(Replicated)
+    AC_Weapon* CurrentWeapon;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Player");
-	TSubclassOf<AC_Weapon> StarterWeaponClass;
+    UPROPERTY(EditDefaultsOnly, Category = "Player");
+    TSubclassOf<AC_Weapon> StarterWeaponClass;
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Player");
-	FName WeaponAttachSocketName;
-
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
-	UC_HealthComponent* HealthComponent;
+    UPROPERTY(VisibleDefaultsOnly, Category = "Player");
+    FName WeaponAttachSocketName;
 
 
-	UFUNCTION()
-	void OnHealthChanged(UC_HealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
-
-	// Pawn died previously 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
-	bool bDied;
-
-	APawn* VehicleInRangePawn;
-
-	bool vehiclePossed;
-
-	bool bNotMoving;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components");
+    UC_HealthComponent* HealthComponent;
 
 
+    UFUNCTION()
+    void OnHealthChanged(UC_HealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    // Pawn died previously 
+    UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
+    bool bDied;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+    APawn* VehicleInRangePawn;
 
-	virtual FVector GetPawnViewLocation() const override;
+    bool vehiclePossed;
 
-  UFUNCTION(BlueprintCallable, Category = "Player")
-  void StartFire();
+    bool bNotMoving;
 
-  UFUNCTION(BlueprintCallable, Category = "Player")
-  void StopFire();
 
-	void EnterVehicle();
 
-	void ExitVehicle();
+public: 
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
+
+    // Called to bind functionality to input
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    virtual FVector GetPawnViewLocation() const override;
+
+
+    UFUNCTION(BlueprintCallable, Category = "Player")
+    void StartFire();
+
+    UFUNCTION(BlueprintCallable, Category = "Player")
+    void StopFire();
+
+    void EnterVehicle();
+
+    void ExitVehicle();
 
 public:
-	void SetVehicleInRange(APawn* VehiclePawn);
+    void SetVehicleInRange(APawn* VehiclePawn);
 
 
 };

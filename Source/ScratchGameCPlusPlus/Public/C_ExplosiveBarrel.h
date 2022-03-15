@@ -55,7 +55,7 @@ protected:
 
   UFUNCTION()
   void OnHealthChanged(UC_HealthComponent* HealthComp, float Health, float HealthDelta, 
-		const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 
 };
