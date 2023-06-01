@@ -11,7 +11,8 @@
 #include "C_MyCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Sound/SoundCue.h"
-
+#include "Engine/World.h"
+#include "EngineUtils.h"
 
 static int32 DebugTrackerBotDrawing = 0;
 FAutoConsoleVariableRef CVARDebugTrackerBotDrawing(TEXT("COOP.DebugTrackerBot"), DebugTrackerBotDrawing, TEXT("Draw debug lines for TrackerBot"), ECVF_Cheat);
@@ -80,11 +81,10 @@ FVector AC_AITrackerBot::GetNextPathPoint()
 	AActor* BestTarget = nullptr;
 	float NearestTargetDistance = FLT_MAX;
 
+	for (TActorIterator<APawn> It(GetWorld()); It; ++It) {
 
-	for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It) {
 
-
-		APawn* TestPawn = It->Get();
+		APawn* TestPawn = *It;
 
 		if (TestPawn == nullptr || UC_HealthComponent::IsFriendly(TestPawn, this)) {
 			continue;

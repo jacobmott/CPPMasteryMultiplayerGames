@@ -6,6 +6,8 @@
 #include "C_HealthComponent.h"
 #include "C_GameStateBase.h"
 #include "C_PlayerState.h"
+#include "Engine/World.h"
+#include "EngineUtils.h"
 
 AC_GameModeBase::AC_GameModeBase()
 {
@@ -71,12 +73,12 @@ void AC_GameModeBase::CheckWaveState()
   }
 
   bool bIsAnyBotAlive = false;
+  UWorld* world = GetWorld();
 
-  for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It) {
+  for (TActorIterator<APawn> It(GetWorld()); It; ++It){
 
-
-    APawn* TestPawn = It->Get();
-
+    APawn* TestPawn = *It;
+    
     if (TestPawn == nullptr || TestPawn->IsPlayerControlled()) {
       continue;
     }

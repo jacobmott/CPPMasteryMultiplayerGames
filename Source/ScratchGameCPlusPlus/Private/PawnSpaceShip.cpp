@@ -161,7 +161,7 @@ void APawnSpaceShip::Tick(float DeltaTime)
 void APawnSpaceShip::HandleCollision(FHitResult* Hit)
 {
 
-	if (Hit->Actor != nullptr && Hit->Actor == CurrentPilot) {
+	if (Hit->GetActor() != nullptr && Hit->GetActor() == CurrentPilot) {
 		return;
 	}
 	if (Hit->IsValidBlockingHit() || bFixRotation) {
@@ -172,13 +172,13 @@ void APawnSpaceShip::HandleCollision(FHitResult* Hit)
 		FVector currentVelocity = MeshComp->GetPhysicsLinearVelocity();
 		FVector clampedVelocity = currentVelocity.GetClampedToMaxSize(MyMaximumSpeedValue);
 		MeshComp->SetPhysicsLinearVelocity(clampedVelocity);
-		MeshComp->SetPhysicsAngularVelocity(clampedVelocity);
+		MeshComp->SetPhysicsAngularVelocityInRadians(clampedVelocity);
 		// In your some onTick or some such that is called each frame:
 		MyMaximumSpeedValue = 10000.0f;
 		currentVelocity = MeshComp->GetPhysicsLinearVelocity();
 		clampedVelocity = currentVelocity.GetClampedToMaxSize(MyMaximumSpeedValue);
 		MeshComp->SetPhysicsLinearVelocity(clampedVelocity);
-		MeshComp->SetPhysicsAngularVelocity(clampedVelocity);
+		MeshComp->SetPhysicsAngularVelocityInRadians(clampedVelocity);
 	}
 }
 
